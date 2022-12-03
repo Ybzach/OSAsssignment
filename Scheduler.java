@@ -1,6 +1,36 @@
 import java.util.*;
 
 public class Scheduler {
+    private PriorityQueue<Process> inputProcesses = new PriorityQueue<Process>(Comparator.comparing(Process :: getArrivalTime).thenComparing(Process :: getPriority));
+    private int totalTurnaroundTime;
+    private int totalWaitingTime;
+    private double averageTurnaroundTime;
+    private double averageWaitingTime;
+
+    public int getTotalTurnaroundTime() {
+        return totalTurnaroundTime;
+    }
+
+    public int getTotalWaitingTime() {
+        return totalWaitingTime;
+    }
+
+    public double getAverageTurnaroundTime() {
+        return averageTurnaroundTime;
+    }
+
+    public double getAverageWaitingTime() {
+        return averageWaitingTime;
+    }
+
+
+    public Scheduler(PriorityQueue<Process> inputQueue){
+        this.inputProcesses = inputQueue;
+        this.totalTurnaroundTime = 0;
+        this.totalWaitingTime = 0;
+        this.averageTurnaroundTime = 0;
+        this.averageWaitingTime = 0;
+    }
 
     public Process selectProcess(PriorityQueue<Process> inputQueue, Process previousProcess, int time){
         PriorityQueue<Process> queueClone = new PriorityQueue<Process>(inputQueue);
@@ -26,17 +56,12 @@ public class Scheduler {
         chart.add(new Burst(null, time));
     }
 
-    public Scheduler(){
-        PriorityQueue<Process> inputProcesses = new PriorityQueue<Process>(Comparator.comparing(Process :: getArrivalTime).thenComparing(Process :: getPriority));
+    public void beginSchedule(){
+        
         PriorityQueue<Process> sortedProcesses = new PriorityQueue<Process>(Comparator.comparing(Process :: getPriority).thenComparing(Process :: getOnHoldTime));
         ArrayList<Burst> ganttChart = new ArrayList<Burst>();
 
-        inputProcesses.add(new Process("P0", 8, 0, 2));
-        inputProcesses.add(new Process("P5", 6, 0, 1));
-        inputProcesses.add(new Process("P1", 15, 4, 5));
-        inputProcesses.add(new Process("P4", 13, 9, 4));
-        inputProcesses.add(new Process("P2", 9, 7, 3));
-        inputProcesses.add(new Process("P3", 5, 13, 1));
+        
         int numberOfProcesses = inputProcesses.size();
         int processesCompleted = 0;
         Process currentProcess = inputProcesses.peek();
@@ -60,10 +85,14 @@ public class Scheduler {
             ganttChart.add(new Burst(currentProcess.getName(), time));
 
             if(currentProcess.isFinished()){
+                processesCompleted++;
                 currentProcess.setFinishingTime(time + 1);
                 currentProcess.calculateTurnaroundTime();
                 currentProcess.calculateWaitingTime();
-                processesCompleted++;
+                this.totalTurnaroundTime += currentProcess.getTurnaroundTime();
+                this.totalWaitingTime += currentProcess.getWaitingTime();
+                this.averageTurnaroundTime = (double)totalTurnaroundTime / processesCompleted;
+                this.averageWaitingTime = (double)totalWaitingTime / processesCompleted;
             }
             time++;
         }while(processesCompleted != numberOfProcesses);
@@ -74,6 +103,21 @@ public class Scheduler {
     }
    
     public static void main(String[] args){
-        new Scheduler();
+        PriorityQueue<Process> inputProcesses = new PriorityQueue<Process>(Comparator.comparing(Process :: getArrivalTime).thenComparing(Process :: getPriority));
+
+        inputProcesses.add(new Process("P0", 8, 0, 2));
+        inputProcesses.add(new Process("P5", 6, 0, 1));
+        inputProcesses.add(new Process("P1", 15, 4, 5));
+        inputProcesses.add(new Process("P4", 13, 9, 4));
+        inputProcesses.add(new Process("P2", 9, 7, 3));
+        inputProcesses.add(new Process("P3", 5, 13, 1));
+        Scheduler scheduler = new Scheduler(inputProcesses);
+
+        scheduler.beginSchedule();
+        System.out.println(scheduler.getTotalTurnaroundTime());
+        System.out.println(scheduler.getTotalWaitingTime());
+        System.out.println(scheduler.getAverageWaitingTime());
+        System.out.println(scheduler.getAverageTurnaroundTime());
+
     }
 }
