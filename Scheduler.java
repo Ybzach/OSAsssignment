@@ -1,7 +1,6 @@
 import java.util.*;
 
 public class Scheduler {
-    private PriorityQueue<Process> inputProcesses = new PriorityQueue<Process>(Comparator.comparing(Process :: getArrivalTime).thenComparing(Process :: getPriority));
     private int totalTurnaroundTime;
     private int totalWaitingTime;
     private double averageTurnaroundTime;
@@ -24,8 +23,7 @@ public class Scheduler {
     }
 
 
-    public Scheduler(PriorityQueue<Process> inputQueue){
-        this.inputProcesses = inputQueue;
+    public Scheduler(){
         this.totalTurnaroundTime = 0;
         this.totalWaitingTime = 0;
         this.averageTurnaroundTime = 0;
@@ -56,7 +54,7 @@ public class Scheduler {
         chart.add(new Burst(null, time));
     }
 
-    public void beginSchedule(){
+    public void beginSchedule(PriorityQueue<Process> inputProcesses){
         
         PriorityQueue<Process> sortedProcesses = new PriorityQueue<Process>(Comparator.comparing(Process :: getPriority).thenComparing(Process :: getOnHoldTime));
         ArrayList<Burst> ganttChart = new ArrayList<Burst>();
@@ -111,9 +109,9 @@ public class Scheduler {
         inputProcesses.add(new Process("P4", 13, 9, 4));
         inputProcesses.add(new Process("P2", 9, 7, 3));
         inputProcesses.add(new Process("P3", 5, 13, 1));
-        Scheduler scheduler = new Scheduler(inputProcesses);
+        Scheduler scheduler = new Scheduler();
 
-        scheduler.beginSchedule();
+        scheduler.beginSchedule(inputProcesses);
         System.out.println(scheduler.getTotalTurnaroundTime());
         System.out.println(scheduler.getTotalWaitingTime());
         System.out.println(scheduler.getAverageWaitingTime());
