@@ -1,3 +1,4 @@
+import java.text.DecimalFormat;
 import java.util.*;
 
 public class Scheduler {
@@ -22,8 +23,7 @@ public class Scheduler {
         return averageWaitingTime;
     }
 
-
-    public Scheduler(){
+        public Scheduler(){
         this.totalTurnaroundTime = 0;
         this.totalWaitingTime = 0;
         this.averageTurnaroundTime = 0;

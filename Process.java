@@ -18,7 +18,7 @@ public class Process{
         return name;
     }
 
-    public int getburstTime(){
+    public int getBurstTime(){
         return burstTime;
     }
 
