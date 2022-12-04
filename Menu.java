@@ -1,4 +1,5 @@
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -11,6 +12,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -21,6 +23,9 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class Menu extends Application { 
@@ -40,7 +45,6 @@ public class Menu extends Application {
         TextField burstTimeField = new TextField();
         TextField priorityField = new TextField();
         Button submitProcess = new Button("Submit");
-        
         Button beginScheduler = new Button("Begin Scheduler");
         beginScheduler.setVisible(false);
 
@@ -65,7 +69,7 @@ public class Menu extends Application {
         form.getChildren().add(textFields);
         form.getChildren().add(buttons);
 
-        Scene scene1 = new Scene(form ,600, 300); 
+        Scene inputScene = new Scene(form ,600, 400); 
         
         // Scene 2
         TableView<Process> table = new TableView<Process>();
@@ -102,12 +106,17 @@ public class Menu extends Application {
         resultsGrid.addRow(0, totalTurnaroundTimeLabel, averageTurnaroundTimeLabel);
         resultsGrid.addRow(1, totalWaitingTimeLabel, averageWaitingTimeLabel);
         
+        Group ganttChartWrapper = new Group();
+        // ganttChartWrapper.set
+
         VBox resultsWrapper = new VBox();
+        resultsWrapper.setSpacing(10);
         resultsWrapper.setPrefWidth(primaryStage.getWidth());
         resultsWrapper.getChildren().add(table);
         resultsWrapper.getChildren().add(resultsGrid);
-        
-        Scene scene2 = new Scene(resultsWrapper, 600, 300); 
+        resultsWrapper.getChildren().add(ganttChartWrapper);
+
+        Scene resultScene = new Scene(resultsWrapper, 600, 400); 
 
         // Button handlers
         submitProcess.setOnAction(new EventHandler<ActionEvent>() {
@@ -132,20 +141,44 @@ public class Menu extends Application {
             @Override
             public void handle(ActionEvent event) {
                 DecimalFormat decimalFormatter = new DecimalFormat("#.##");
-                scheduler.beginSchedule(inputProcesses);
+                ArrayList<Burst> ganttChart = scheduler.beginSchedule(inputProcesses);
                 addProcessesToTable(table, inputProcesses.iterator());
-                primaryStage.setScene(scene2);
+                primaryStage.setScene(resultScene);
                 totalTurnaroundTimeLabel.setText("Total Turnaround Time: " + decimalFormatter.format(scheduler.getTotalTurnaroundTime()));
                 totalWaitingTimeLabel.setText("Total Waiting Time: " + decimalFormatter.format(scheduler.getTotalWaitingTime()));
                 averageTurnaroundTimeLabel.setText("Average Turnaround Time: " + decimalFormatter.format(scheduler.getAverageTurnaroundTime()));
                 averageWaitingTimeLabel.setText("Average Waiting Time: " + decimalFormatter.format(scheduler.getAverageWaitingTime()));
+                int startCoorX = 0;
+        
+                Text startTimeText = new Text("" + ganttChart.get(0).getTime());
+                startTimeText.setX(startCoorX);
+                startTimeText.setY(45);
+                ganttChartWrapper.getChildren().add(startTimeText);
+
+                for (int i = 1; i < ganttChart.size(); i++){
+                    Burst burst = ganttChart.get(i);
+                    Rectangle rectangle = new Rectangle(60, 30);
+                    ganttChartWrapper.getChildren().add(rectangle);
+                    rectangle.setX(startCoorX);
+                    rectangle.setFill(Color.TRANSPARENT);
+                    rectangle.setStroke(Color.BLACK);
+                    Text processNameText = new Text(burst.getName());
+                    processNameText.setX(startCoorX + 10);
+                    processNameText.setY(20);
+                    ganttChartWrapper.getChildren().add(processNameText);
+                    startCoorX += 60;
+                    Text processTimeText = new Text("" + burst.getTime());
+                    processTimeText.setX(startCoorX - 5);
+                    processTimeText.setY(45);
+                    ganttChartWrapper.getChildren().add(processTimeText);
+                }
             }
         });
 
         
         
         primaryStage.setTitle("Preemptive Priority CPU Scheduler"); 
-        primaryStage.setScene(scene1); 
+        primaryStage.setScene(inputScene); 
         primaryStage.show(); 
 
 

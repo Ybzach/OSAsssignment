@@ -1,4 +1,3 @@
-import java.text.DecimalFormat;
 import java.util.*;
 
 public class Scheduler {
@@ -23,14 +22,14 @@ public class Scheduler {
         return averageWaitingTime;
     }
 
-        public Scheduler(){
+    public Scheduler(){
         this.totalTurnaroundTime = 0;
         this.totalWaitingTime = 0;
         this.averageTurnaroundTime = 0;
         this.averageWaitingTime = 0;
     }
 
-    public Process selectProcess(PriorityQueue<Process> inputQueue, Process previousProcess, int time){
+    public Process selectProcess(PriorityQueue<Process> inputQueue, ArrayList<Burst> chart, Process previousProcess, int time){
         PriorityQueue<Process> queueClone = new PriorityQueue<Process>(inputQueue);
         Process selectedProcess = inputQueue.peek();
         while(!(queueClone.isEmpty())){
@@ -45,6 +44,8 @@ public class Scheduler {
             inputQueue.remove(previousProcess);
             previousProcess.setOnHoldTime(time);
             inputQueue.add(previousProcess);
+            chart.add(new Burst(previousProcess.getName(), time));
+
         } 
 
         return selectedProcess;
@@ -54,16 +55,15 @@ public class Scheduler {
         chart.add(new Burst(null, time));
     }
 
-    public void beginSchedule(PriorityQueue<Process> inputProcesses){
-        
+    public ArrayList<Burst> beginSchedule(PriorityQueue<Process> inputProcesses){
         PriorityQueue<Process> sortedProcesses = new PriorityQueue<Process>(Comparator.comparing(Process :: getPriority).thenComparing(Process :: getOnHoldTime));
         ArrayList<Burst> ganttChart = new ArrayList<Burst>();
-
         
         int numberOfProcesses = inputProcesses.size();
         int processesCompleted = 0;
         Process currentProcess = inputProcesses.peek();
         int time = currentProcess.getArrivalTime();
+        ganttChart.add(new Burst(currentProcess.getName(), time));
                 
         Iterator<Process> it = inputProcesses.iterator();
         while(it.hasNext()){
@@ -71,7 +71,7 @@ public class Scheduler {
         }
         
         do{
-            currentProcess = selectProcess(sortedProcesses, currentProcess, time);
+            currentProcess = selectProcess(sortedProcesses, ganttChart, currentProcess, time);
             
             if(currentProcess.isFinished()){
                 emptyBurst(ganttChart, time);
@@ -80,7 +80,6 @@ public class Scheduler {
             }
 
             currentProcess.setRemainingBurstTime(currentProcess.getRemainingBurstTime() - 1);
-            ganttChart.add(new Burst(currentProcess.getName(), time));
 
             if(currentProcess.isFinished()){
                 processesCompleted++;
@@ -95,9 +94,9 @@ public class Scheduler {
             time++;
         }while(processesCompleted != numberOfProcesses);
 
-        for (int i = 0; i < ganttChart.size(); i++){
-            System.out.println(ganttChart.get(i));
-        }
+        ganttChart.add(new Burst(currentProcess.getName(), time));
+
+        return ganttChart;
     }
    
     public static void main(String[] args){
