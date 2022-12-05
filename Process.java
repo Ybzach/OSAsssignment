@@ -30,7 +30,7 @@ public class Process{
         return arrivalTime;
     }
 
-    public int getFinshingTime(){
+    public int getFinishingTime(){
         return finishingTime;
     }
 
